@@ -1769,25 +1769,9 @@ AtPosicaoObstaculo:
 ; Funcao que reseta a posicao do obstaculo
 
 ResetaObstaculo:
-    push r0
-    push r1
-    push r3
     
-    loadn r2, #919      ; Posicao (padrao do obstaculo)
-    
-    call GeraPosicao    ; Gera a nova  posicao para o obstaculo
-    
-    loadn r1, #1        ;  Caso 1
-    cmp r3,r1
-    ceq AlteraPos1
-    
-    loadn r1, #2        ; Caso 2
-    cmp r3,r1
-    ceq AlteraPos2
-    
-    pop r3
-    pop r1
-    pop r0
+    loadn r2, #918      ; Posicao (padrao do obstaculo)
+  
     rts
 
     
