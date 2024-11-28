@@ -2231,22 +2231,11 @@ printCenarioScreen:
 ;                ChecaColisao
 ;********************************************************
 ChecaColisao:
-    push r0
      
     ;;compara posicao inferior do personagem com a do obstaculo, se igual finaliza o jogo
     cmp r2, r6 
     jeq GameOver
     
-    loadn r0,#40
-    sub r6,r6,r0
-    
-    ;;compara posicao superior do personagem com a do obstaculo, se igual finaliza o jogo
-    cmp r2, r6
-    jeq GameOver
-    
-    add r6,r6,r0
-    
-    pop r0
     rts
 
                                                        
