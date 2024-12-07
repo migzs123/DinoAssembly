@@ -3837,8 +3837,6 @@ GameOverScreen : var #1200
   static GameOverScreen + #1198, #3967
   static GameOverScreen + #1199, #3967
 
-    
-IncRand: var #1
 
 ; ##################################################
 ; #                                                #
@@ -3875,9 +3873,6 @@ main:
         loadn r0, #80                ; delay pulo
         store delay2, r0
     
-    
-    
-            
 
     InicioJogo:     ; Inicializa variaveis e registradores usados no jogo antes de comecar o loop principal
         
@@ -3904,8 +3899,7 @@ main:
             call PrintaPlayer
             
             call AtPosicaoObstaculo     ; Move o obstaculo
-            call PrintaObstaculo
-            ;outchar r1, r2              ; Desenha o obstaculo
+            call PrintaObstaculo        ; Desenha o obstaculo
             
             call DelayChecaPulo     ; Todo ciclo principal do jogo, a funcao DelayChecaPulo atrasa a execucao e le uma tecla do teclado (que e' 'w' ou nao)
             call AttPosicaoPlayer   ; Todo ciclo principal do jogo, a funcao AtPosicaoBoneco atualiza a posicao do boneco de acordo com a situacao
@@ -4416,11 +4410,31 @@ DigLetra:
     rts
 
 ChecaColisao:
-    cmp r2, r6
+    push r0
+    push r1
+
+    ; Verifica colisão para todas as partes do jogador
+    loadn r0, #40       ; deslocamento vertical
+    sub r1, r6, r0      ; posição acima do jogador
+    cmp r1, r2
     jeq GameOver
 
-    rts
+    add r1, r6, r0      ; posição abaixo do jogador
+    cmp r1, r2
+    jeq GameOver
 
+    loadn r0, #1        ; deslocamento horizontal
+    add r1, r6, r0      ; posição à direita do jogador
+    cmp r1, r2
+    jeq GameOver
+
+    sub r1, r6, r0      ; posição à esquerda do jogador
+    cmp r1, r2
+    jeq GameOver
+
+    pop r1
+    pop r0
+    rts
 
 
 ;------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
