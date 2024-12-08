@@ -3849,35 +3849,35 @@ main:
     call ApagaTela
     call printStartScreen
     
-    jmp Loop_Inicio
+    jmp Inicio
     
-    Loop_Inicio:
+    Inicio:
         
-        call DigLetra       ; Le uma letra
+        call DigLetra       
         
-        loadn r0, #' '      ; Espera que a tecla 'space' seja digitada para iniciar o jogo
+        loadn r0, #' '      
         load r1, Letra
         cmp r0, r1
-        jne Loop_Inicio
+        jne Inicio
     
-    setamento:
+    Inicializa:
         
         push r2
-        loadn r2, #0                ; Inicializa os pontos
+        loadn r2, #0               
         store pontos, r2
         pop r2
         
         loadn r0, #1200
-        store delay1, R0             ; delay meteoro
+        store delay1, R0             
         
-        loadn r0, #80                ; delay pulo
+        loadn r0, #80                
         store delay2, r0
     
 
-    InicioJogo:     ; Inicializa variaveis e registradores usados no jogo antes de comecar o loop principal
+    InicioJogo:     
         
         
-        call ApagaTela              ;   Imprime a tela basica do jogo
+        call ApagaTela              
         call printCenarioScreen
         
         loadn r7, #' '  ; Parametro para saber se a tecla certa foi pressionada
@@ -3889,34 +3889,32 @@ main:
         
         jmp LoopJogo
     
-        LoopJogo:       ; Loop principal do jogo
-        
-            call ChecaColisao   ; Checa se houve uma colisao
-            
-            call AtPontos       ; Atualiza os pontos
+    LoopJogo:
 
-            call ApagaPlayer    ; Desenha o personagem
-            call PrintaPlayer
-            
-            call AtPosicaoObstaculo     ; Move o obstaculo
-            call PrintaObstaculo        ; Desenha o obstaculo
-            
-            call DelayChecaPulo     ; Todo ciclo principal do jogo, a funcao DelayChecaPulo atrasa a execucao e le uma tecla do teclado (que e' 'w' ou nao)
-            call AttPosicaoPlayer   ; Todo ciclo principal do jogo, a funcao AtPosicaoBoneco atualiza a posicao do boneco de acordo com a situacao
-            
-            push r3             ; Checa se pode pular (caso o personagem esteja no chao)
-            loadn r3, #0 
-            cmp r5, r3
-                ceq ChecaPulo ; A funcao checa se o jogador mandou o personagem pular
-            pop r3
-                
-            
-        jmp LoopJogo    ; Volta para o loop
-    
+        call ChecaColisao
+        call AtPontos
+
+        call ApagaPlayer
+        call PrintaPlayer
+
+        call AtPosicaoObstaculo
+        call PrintaObstaculo
+
+        call DelayChecaPulo
+        call AttPosicaoPlayer
+
+        push r3
+        loadn r3, #0
+        cmp r5, r3
+            ceq ChecaPulo
+        pop r3
+
+        jmp LoopJogo
+      
     
     GameOver:
     
-        call ApagaTela              ;   Imprime a tela do fim do jogo
+        call ApagaTela              
         call printGameOverScreen
         
         ;load r5, pontos
@@ -3924,8 +3922,7 @@ main:
         ;call PrintaNumero
         
         call DigLetra
-        
-        ;if Letra == ' '        ; Espera que a tecla 's' seja digitada para reiniciar o jogo
+                
         loadn r0, #'n'
         load r1, Letra
         cmp r0, r1
@@ -3941,8 +3938,8 @@ main:
         pop r1
         pop r0
 
-        pop r0  ; Da um Pop a mais para acertar o ponteiro da pilha, pois nao vai dar o RTS !!
-        jmp setamento   
+        pop r0  
+        jmp Inicializa   
         
 fim_de_jogo:
     call ApagaTela
