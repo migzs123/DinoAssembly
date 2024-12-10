@@ -2531,51 +2531,6 @@ cenario : var #1200
   static cenario + #1199, #38
 
 
-Letra: var #1
-
-boneco: string "z" ; Para desenhar o personagem (o caracter é substituido no charmap)
-obstaculo: string "o"   ; Para desenhar o obstaculo (o caracter é substituido no charmap)
-placar : string "SCORE: " ; String do placar
-
-posperso: var #490 ; Posicao padrao do personagem
-pontos: var #1  ; seta 1 para funcionar pontuacao
-
-delay1: var #1000   ; Variaveis para usar como parametro para o delay(quanto maior forem, mais lenta é cada 'ciclo')
-delay2: var #1000
-
-Rand : var #30          ; Tabela de nrs. Randomicos entre 1 - 3 
-    static Rand + #0, #3
-    static Rand + #1, #2
-    static Rand + #2, #2
-    static Rand + #3, #3
-    static Rand + #4, #3
-    static Rand + #5, #2
-    static Rand + #6, #1
-    static Rand + #7, #2
-    static Rand + #8, #1
-    static Rand + #9, #3
-    static Rand + #10, #2
-    static Rand + #11, #1
-    static Rand + #12, #3
-    static Rand + #13, #3
-    static Rand + #14, #2
-    static Rand + #15, #1
-    static Rand + #16, #2
-    static Rand + #17, #3
-    static Rand + #18, #1
-    static Rand + #19, #2
-    static Rand + #20, #1
-    static Rand + #20, #2
-    static Rand + #21, #3
-    static Rand + #22, #2
-    static Rand + #23, #2
-    static Rand + #24, #1
-    static Rand + #25, #1
-    static Rand + #26, #3
-    static Rand + #27, #2
-    static Rand + #28, #3
-    static Rand + #29, #2
-
 GameOverScreen : var #1200
   ;Linha 0
   static GameOverScreen + #0, #3967
@@ -3837,6 +3792,13 @@ GameOverScreen : var #1200
   static GameOverScreen + #1198, #3967
   static GameOverScreen + #1199, #3967
 
+  Letra: var #1
+
+  pontos: var #1  ; seta 1 para funcionar pontuacao
+
+  delay1: var #1000   ; Variaveis para usar como parametro para o delay(quanto maior forem, mais lenta é cada 'ciclo')
+  delay2: var #1000
+
 
 ; ##################################################
 ; #                                                #
@@ -3845,105 +3807,99 @@ GameOverScreen : var #1200
 ; ##################################################
 
 main:   
+    call ApagaTela           ; Limpa a tela para iniciar.
+    call printStartScreen    ; Exibe a tela inicial do jogo.
     
-    call ApagaTela
-    call printStartScreen
+    jmp Inicio               ; Salta para o rótulo "Inicio".
     
-    jmp Inicio
+Inicio:
+        
+    call DigLetra            ; Aguarda o jogador digitar uma letra.
+        
+    loadn r0, #' '           ; Carrega o caractere ' ' (espaço) em r0.
+    load r1, Letra           ; Carrega o valor da letra digitada em r1.
+    cmp r0, r1               ; Compara o espaço com a letra digitada.
+    jne Inicio               ; Se a letra não for espaço, volta para o início.
     
-    Inicio:
+Inicializa:
         
-        call DigLetra       
+    push r2                  ; Salva o valor atual de r2 na pilha.
+    loadn r2, #0             ; Inicializa r2 com 0.
+    store pontos, r2         ; Zera a variável "pontos".
+    pop r2                   ; Recupera o valor original de r2.
         
-        loadn r0, #' '      
-        load r1, Letra
-        cmp r0, r1
-        jne Inicio
+    loadn r0, #1200          ; Define o delay principal para 1200 ciclos.
+    store delay1, r0         ; Armazena em "delay1".
+        
+    loadn r0, #80            ; Define o delay secundário para 80 ciclos.
+    store delay2, r0         ; Armazena em "delay2".
     
-    Inicializa:
+InicioJogo:     
         
-        push r2
-        loadn r2, #0               
-        store pontos, r2
-        pop r2
+    call ApagaTela           ; Limpa a tela.
+    call printCenarioScreen  ; Desenha o cenário do jogo.
         
-        loadn r0, #1200
-        store delay1, R0             
+    loadn r7, #' '           ; Inicializa r7 como espaço (para verificar tecla).
+    loadn r6, #844           ; Define a posição inicial do jogador na tela.
+    loadn r2, #918           ; Define a posição inicial do obstáculo.
+    loadn r5, #0             ; Define o ciclo de pulo como no chão.
         
-        loadn r0, #80                
-        store delay2, r0
+    jmp LoopJogo             ; Vai para o loop principal do jogo.
     
+LoopJogo:
 
-    InicioJogo:     
-        
-        
-        call ApagaTela              
-        call printCenarioScreen
-        
-        loadn r7, #' '  ; Parametro para saber se a tecla certa foi pressionada
-        loadn r6, #844  ; Posicao do boneco na tela (fixa no eixo x e variavel no eixo y)
-        loadn r2, #918  ; Posicao do obstaculo na tela (fixa no eixo x e variavel no eixo y)
-        load r4, boneco ; Guardando a string do boneco no registrador r4
-        load r1, obstaculo  ; Guardando a string do obstaculo no registrador r1
-        loadn r5, #0    ; Ciclo do pulo (0 = chao, entre 1 e 3 = sobe, maior que 3 = desce)
-        
-        jmp LoopJogo
-    
-    LoopJogo:
+    call ChecaColisao        ; Verifica colisão entre jogador e obstáculo.
+    call AtPontos            ; Atualiza os pontos do jogador.
 
-        call ChecaColisao
-        call AtPontos
+    call ApagaPlayer         ; Remove a posição atual do jogador na tela.
+    call PrintaPlayer        ; Imprime a nova posição do jogador.
 
-        call ApagaPlayer
-        call PrintaPlayer
+    call AtPosicaoObstaculo  ; Atualiza a posição do obstáculo.
+    call PrintaObstaculo     ; Desenha o obstáculo na nova posição.
 
-        call AtPosicaoObstaculo
-        call PrintaObstaculo
+    call DelayChecaPulo      ; Aguarda para verificar o estado do pulo.
+    call AttPosicaoPlayer    ; Atualiza a posição do jogador no eixo Y.
 
-        call DelayChecaPulo
-        call AttPosicaoPlayer
+    push r3                  ; Salva o valor de r3.
+    loadn r3, #0             ; Inicializa r3 com 0.
+    cmp r5, r3               ; Compara o ciclo de pulo com 0.
+        ceq ChecaPulo        ; Executa "ChecaPulo" se o jogador estiver pulando.
+    pop r3                   ; Restaura o valor de r3.
 
-        push r3
-        loadn r3, #0
-        cmp r5, r3
-            ceq ChecaPulo
-        pop r3
-
-        jmp LoopJogo
+    jmp LoopJogo             ; Continua o loop principal.
       
+GameOver:
     
-    GameOver:
-    
-        call ApagaTela              
-        call printGameOverScreen
+    call ApagaTela           ; Limpa a tela.
+    call printGameOverScreen ; Exibe a tela de "Game Over".
         
-        ;load r5, pontos
-        ;loadn r6, #865  
-        ;call PrintaNumero
+    load r5, pontos          ; Carrega a pontuação final.
+    loadn r6, #0             ; Define um valor base.
+    call PrintaNumero        ; Imprime a pontuação.
         
-        call DigLetra
+    call DigLetra            ; Aguarda o jogador digitar uma letra.
                 
-        loadn r0, #'n'
-        load r1, Letra
-        cmp r0, r1
-        jeq fim_de_jogo
+    loadn r0, #'n'           ; Carrega 'n' (não).
+    load r1, Letra           ; Carrega a letra digitada.
+    cmp r0, r1               ; Verifica se a letra é 'n'.
+    jeq fim_de_jogo          ; Finaliza o jogo se for 'n'.
         
-        loadn r0, #'s'
-        cmp r0, r1
-        jne GameOver
+    loadn r0, #'s'           ; Carrega 's' (sim).
+    cmp r0, r1               ; Verifica se a letra é 's'.
+    jne GameOver             ; Volta para "Game Over" se não for 's'.
         
-        call ApagaTela
+    call ApagaTela           ; Limpa a tela.
     
-        pop r2
-        pop r1
-        pop r0
+    pop r2                   ; Restaura os valores iniciais da pilha.
+    pop r1
+    pop r0
 
-        pop r0  
-        jmp Inicializa   
+    pop r0                   
+    jmp Inicializa           ; Reinicia o jogo.
         
 fim_de_jogo:
-    call ApagaTela
-    halt
+    call ApagaTela           ; Limpa a tela.
+    halt                     ; Termina a execução.
     
 ; ##################################################
 ; #                                                #
@@ -3956,100 +3912,95 @@ fim_de_jogo:
 ; |------------------------------------------------|
 
 printStartScreen:
-  push R0
-  push R1
-  push R2
-  push R3
+  push R0                    ; Salva o valor de R0 na pilha.
+  push R1                    ; Salva o valor de R1 na pilha.
+  push R2                    ; Salva o valor de R2 na pilha.
+  push R3                    ; Salva o valor de R3 na pilha.
 
-  loadn R0, #StartScren
-  loadn R1, #0
-  loadn R2, #1200
+  loadn R0, #StartScren      ; Carrega o endereço inicial da tela de início.
+  loadn R1, #0               ; Inicializa o índice para percorrer os caracteres.
+  loadn R2, #1200            ; Define o tamanho da tela (número de caracteres).
 
   printStartScreenLoop:
 
-    add R3,R0,R1
-    loadi R3, R3
-    outchar R3, R1
-    inc R1
-    cmp R1, R2
+    add R3, R0, R1           ; Calcula o endereço do caractere atual.
+    loadi R3, R3             ; Carrega o caractere no endereço calculado.
+    outchar R3, R1           ; Exibe o caractere na posição atual da tela.
+    inc R1                   ; Incrementa o índice para o próximo caractere.
+    cmp R1, R2               ; Verifica se o índice atingiu o tamanho da tela.
+    jne printStartScreenLoop ; Se não atingiu, continua o loop.
 
-    jne printStartScreenLoop
-
-  pop R3
-  pop R2
-  pop R1
-  pop R0
-  rts
-
+  pop R3                     ; Recupera o valor original de R3.
+  pop R2                     ; Recupera o valor original de R2.
+  pop R1                     ; Recupera o valor original de R1.
+  pop R0                     ; Recupera o valor original de R0.
+  rts                        ; Retorna da subrotina.
 
 printCenarioScreen:
-  push R0
-  push R1
-  push R2
-  push R3
+  push R0                    ; Salva o valor de R0 na pilha.
+  push R1                    ; Salva o valor de R1 na pilha.
+  push R2                    ; Salva o valor de R2 na pilha.
+  push R3                    ; Salva o valor de R3 na pilha.
 
-  loadn R0, #cenario
-  loadn R1, #0
-  loadn R2, #1200
+  loadn R0, #cenario         ; Carrega o endereço inicial do cenário.
+  loadn R1, #0               ; Inicializa o índice para percorrer os caracteres.
+  loadn R2, #1200            ; Define o tamanho do cenário (número de caracteres).
 
   printcenarioScreenLoop:
 
-    add R3,R0,R1
-    loadi R3, R3
-    outchar R3, R1
-    inc R1
-    cmp R1, R2
+    add R3, R0, R1           ; Calcula o endereço do caractere atual.
+    loadi R3, R3             ; Carrega o caractere no endereço calculado.
+    outchar R3, R1           ; Exibe o caractere na posição atual da tela.
+    inc R1                   ; Incrementa o índice para o próximo caractere.
+    cmp R1, R2               ; Verifica se o índice atingiu o tamanho do cenário.
+    jne printcenarioScreenLoop ; Se não atingiu, continua o loop.
 
-    jne printcenarioScreenLoop
-
-  pop R3
-  pop R2
-  pop R1
-  pop R0
-  rts
-  
+  pop R3                     ; Recupera o valor original de R3.
+  pop R2                     ; Recupera o valor original de R2.
+  pop R1                     ; Recupera o valor original de R1.
+  pop R0                     ; Recupera o valor original de R0.
+  rts                        ; Retorna da subrotina.
 
 printGameOverScreen:
-  push R0
-  push R1
-  push R2
-  push R3
+  push R0                    ; Salva o valor de R0 na pilha.
+  push R1                    ; Salva o valor de R1 na pilha.
+  push R2                    ; Salva o valor de R2 na pilha.
+  push R3                    ; Salva o valor de R3 na pilha.
 
-  loadn R0, #GameOverScreen
-  loadn R1, #0
-  loadn R2, #1200
+  loadn R0, #GameOverScreen  ; Carrega o endereço inicial da tela de "Game Over".
+  loadn R1, #0               ; Inicializa o índice para percorrer os caracteres.
+  loadn R2, #1200            ; Define o tamanho da tela (número de caracteres).
 
   printGameOverScreenLoop:
 
-    add R3,R0,R1
-    loadi R3, R3
-    outchar R3, R1
-    inc R1
-    cmp R1, R2
+    add R3, R0, R1           ; Calcula o endereço do caractere atual.
+    loadi R3, R3             ; Carrega o caractere no endereço calculado.
+    outchar R3, R1           ; Exibe o caractere na posição atual da tela.
+    inc R1                   ; Incrementa o índice para o próximo caractere.
+    cmp R1, R2               ; Verifica se o índice atingiu o tamanho da tela.
+    jne printGameOverScreenLoop ; Se não atingiu, continua o loop.
 
-    jne printGameOverScreenLoop
-
-  pop R3
-  pop R2
-  pop R1
-  pop R0
-  rts               
+  pop R3                     ; Recupera o valor original de R3.
+  pop R2                     ; Recupera o valor original de R2.
+  pop R1                     ; Recupera o valor original de R1.
+  pop R0                     ; Recupera o valor original de R0.
+  rts                        ; Retorna da subrotina.
 
 ApagaTela:
-    push r0
-    push r1
+    push r0                  ; Salva o valor de r0 na pilha.
+    push r1                  ; Salva o valor de r1 na pilha.
     
-    loadn r0, #1200     
-    loadn r1, #' '      
-    
-       ApagaTela_Loop:  
-        dec r0
-        outchar r1, r0
-        jnz ApagaTela_Loop
+    loadn r0, #1200          ; Define o número de posições na tela a serem apagadas.
+    loadn r1, #' '           ; Carrega o caractere espaço (para apagar).
+
+ApagaTela_Loop:
+        dec r0               ; Decrementa o contador para percorrer as posições.
+        outchar r1, r0       ; Escreve um espaço na posição atual.
+        jnz ApagaTela_Loop   ; Continua o loop enquanto o contador não for zero.
  
-    pop r1
-    pop r0
-    rts 
+    pop r1                   ; Recupera o valor original de r1.
+    pop r0                   ; Recupera o valor original de r0.
+    rts                      ; Retorna da subrotina.
 
 
 ; |------------------------------------------------|
@@ -4058,174 +4009,171 @@ ApagaTela:
 
 
 PrintaPlayer:
-    push r1
-    push r3
-    push r4
+    push r1                ; Salva o valor de r1 na pilha.
+    push r3                ; Salva o valor de r3 na pilha.
+    push r4                ; Salva o valor de r4 na pilha.
 
-    loadn r1, #'!'
-    outchar r1, r6
-    loadn r1, #'"'  
-    loadn r4, #1
-    add r3, r6, r4
-    outchar r1, r3
-    loadn r1, #'#'
-    loadn r4, #40
-    add r3, r6, r4
-    outchar r1, r3
-    loadn r1, #'$'
-    loadn r4, #41
-    add r3, r6, r4
-    outchar r1, r3
+    loadn r1, #'!'         ; Carrega o caractere '!' (cabeça do jogador).
+    outchar r1, r6         ; Imprime '!' na posição atual (r6).
+    loadn r1, #'"'         ; Carrega o caractere '"' (corpo superior do jogador).
+    loadn r4, #1           ; Define deslocamento para a próxima posição.
+    add r3, r6, r4         ; Calcula a posição para o próximo caractere.
+    outchar r1, r3         ; Imprime '"' na posição calculada.
+    loadn r1, #'#'         ; Carrega o caractere '#' (corpo inferior esquerdo).
+    loadn r4, #40          ; Define deslocamento vertical.
+    add r3, r6, r4         ; Calcula a posição para o próximo caractere.
+    outchar r1, r3         ; Imprime '#' na posição calculada.
+    loadn r1, #'$'         ; Carrega o caractere '$' (corpo inferior direito).
+    loadn r4, #41          ; Define deslocamento diagonal.
+    add r3, r6, r4         ; Calcula a posição para o próximo caractere.
+    outchar r1, r3         ; Imprime '$' na posição calculada.
 
-    pop r4
-    pop r3
-    pop r1
+    pop r4                 ; Recupera o valor original de r4.
+    pop r3                 ; Recupera o valor original de r3.
+    pop r1                 ; Recupera o valor original de r1.
 
-    rts
+    rts                    ; Retorna da subrotina.
 
 ApagaPlayer:
-    push r1
-    push r3
-    push r4
+    push r1                ; Salva o valor de r1 na pilha.
+    push r3                ; Salva o valor de r3 na pilha.
+    push r4                ; Salva o valor de r4 na pilha.
 
-    loadn r1, #' '
-    outchar r1, r6
-    loadn r4, #1
-    add r3, r6, r4
-    outchar r1, r3
-    loadn r4, #40
-    add r3, r6, r4
-    outchar r1, r3
-    loadn r4, #41
-    add r3, r6, r4
-    outchar r1, r3
+    loadn r1, #' '         ; Carrega o caractere de espaço (para apagar).
+    outchar r1, r6         ; Apaga na posição atual (r6).
+    loadn r4, #1           ; Define deslocamento para a próxima posição.
+    add r3, r6, r4         ; Calcula a próxima posição.
+    outchar r1, r3         ; Apaga na posição calculada.
+    loadn r4, #40          ; Define deslocamento vertical.
+    add r3, r6, r4         ; Calcula a posição para o próximo caractere.
+    outchar r1, r3         ; Apaga na posição calculada.
+    loadn r4, #41          ; Define deslocamento diagonal.
+    add r3, r6, r4         ; Calcula a posição para o próximo caractere.
+    outchar r1, r3         ; Apaga na posição calculada.
 
-    pop r4
-    pop r3
-    pop r1
+    pop r4                 ; Recupera o valor original de r4.
+    pop r3                 ; Recupera o valor original de r3.
+    pop r1                 ; Recupera o valor original de r1.
 
-    rts
+    rts                    ; Retorna da subrotina.
 
 AttPosicaoPlayer:
-    push r0
+    push r0                ; Salva o valor de r0 na pilha.
 
-    loadn r0, #1
-    cmp r5, r0
-        ceq Sobe
+    loadn r0, #1           ; Define ciclo para subir.
+    cmp r5, r0             ; Verifica se o ciclo atual é 1.
+        ceq Sobe           ; Se for igual, chama a subrotina Sobe.
 
+    ; Verifica para outros ciclos de subida.
     loadn r0, #2
     cmp r5, r0
         ceq Sobe
-
     loadn r0, #3
     cmp r5, r0
         ceq Sobe
-
     loadn r0, #4
     cmp r5, r0
         ceq Sobe
 
+    ; Verifica para ciclos de descida.
     loadn r0, #5
     cmp r5, r0
         ceq Desce
-
     loadn r0, #6
     cmp r5, r0
         ceq Desce
-
     loadn r0, #7
     cmp r5, r0
         ceq Desce
-
     loadn r0, #8
     cmp r5, r0
         ceq Desce
 
+    ; Verifica outros estados do ciclo.
     loadn r0, #0
     cmp r5, r0
-        cne IncrementaCiclo
-
+        cne IncrementaCiclo ; Incrementa o ciclo se não for 0.
     loadn r0, #9
     cmp r5, r0
-        ceq ResetaCiclo
+        ceq ResetaCiclo     ; Reseta o ciclo se for 9.
 
-    pop r0
-    rts
+    pop r0                 ; Recupera o valor original de r0.
+    rts                    ; Retorna da subrotina.
 
 ChecaPulo:
-    push r3
-    load r3, Letra
-    cmp r7, r3
-        ceq IncrementaCiclo
-    pop r3
-    rts
+    push r3                ; Salva o valor de r3 na pilha.
+    load r3, Letra         ; Carrega a última tecla pressionada.
+    cmp r7, r3             ; Verifica se a tecla correta foi pressionada.
+        ceq IncrementaCiclo ; Incrementa o ciclo se a tecla estiver correta.
+    pop r3                 ; Recupera o valor original de r3.
+    rts                    ; Retorna da subrotina.
 
 IncrementaCiclo:
-    inc r5
-    rts
+    inc r5                 ; Incrementa o valor do ciclo (r5).
+    rts                    ; Retorna da subrotina.
 
 ResetaCiclo:
-    loadn r5, #0
-    rts
+    loadn r5, #0           ; Reseta o ciclo para 0.
+    rts                    ; Retorna da subrotina.
 
 Sobe:
-    push r1
-    push r2
+    push r1                ; Salva o valor de r1 na pilha.
+    push r2                ; Salva o valor de r2 na pilha.
 
-    call ApagaPlayer
+    call ApagaPlayer       ; Apaga o jogador da posição atual.
 
-    loadn r1, #40
-    sub r6, r6, r1
+    loadn r1, #40          ; Define o deslocamento para cima.
+    sub r6, r6, r1         ; Atualiza a posição do jogador para subir.
 
-    pop r2
-    pop r1
-    rts
+    pop r2                 ; Recupera o valor original de r2.
+    pop r1                 ; Recupera o valor original de r1.
+    rts                    ; Retorna da subrotina.
 
 Desce:
-    push r1
-    push r2
+    push r1                ; Salva o valor de r1 na pilha.
+    push r2                ; Salva o valor de r2 na pilha.
 
-    call ApagaPlayer
+    call ApagaPlayer       ; Apaga o jogador da posição atual.
 
-    loadn r1, #40
-    add r6, r6, r1
+    loadn r1, #40          ; Define o deslocamento para baixo.
+    add r6, r6, r1         ; Atualiza a posição do jogador para descer.
 
-    pop r2
-    pop r1
-    rts
+    pop r2                 ; Recupera o valor original de r2.
+    pop r1                 ; Recupera o valor original de r1.
+    rts                    ; Retorna da subrotina.
 
 DelayChecaPulo:
-    push r0
-    push r1
-    push r2
-    push r3
+    push r0                ; Salva o valor de r0 na pilha.
+    push r1                ; Salva o valor de r1 na pilha.
+    push r2                ; Salva o valor de r2 na pilha.
+    push r3                ; Salva o valor de r3 na pilha.
 
-    load r0, delay1
-    loadn r3, #255
-    store Letra, r3
+    load r0, delay1        ; Carrega o valor do primeiro delay.
+    loadn r3, #255         ; Define o valor inicial da tecla ('#255').
+    store Letra, r3        ; Armazena o valor inicial em Letra.
 
-    loop_delay_1:
-        load r1, delay2
+loop_delay_1:
+        load r1, delay2    ; Carrega o valor do segundo delay.
 
-            loop_delay_2:
-                inchar r2
-                cmp r2, r3 
-                jeq loop_skip
-                store Letra, r2
+loop_delay_2:
+            inchar r2      ; Verifica se uma tecla foi pressionada.
+            cmp r2, r3     ; Compara com o valor inicial.
+            jeq loop_skip  ; Ignora se for igual ao valor inicial.
+            store Letra, r2 ; Armazena a tecla pressionada.
 
-    loop_skip:
-        dec r1
-        jnz loop_delay_2
-        dec r0
-        jnz loop_delay_1
-        jmp sai_dalay
+loop_skip:
+        dec r1             ; Decrementa o delay interno.
+        jnz loop_delay_2   ; Continua o loop se não for zero.
+        dec r0             ; Decrementa o delay externo.
+        jnz loop_delay_1   ; Continua o loop se não for zero.
 
-    sai_dalay:
-        pop r3
-        pop r2
-        pop r1
-        pop r0
-    rts
+sai_dalay:
+        pop r3             ; Recupera o valor original de r3.
+        pop r2             ; Recupera o valor original de r2.
+        pop r1             ; Recupera o valor original de r1.
+        pop r0             ; Recupera o valor original de r0.
+    rts                    ; Retorna da subrotina.
+
 
 
 ; |------------------------------------------------|
@@ -4233,80 +4181,80 @@ DelayChecaPulo:
 ; |------------------------------------------------|
 
 PrintaObstaculo:
-    push r1
-    push r3
-    push r4
+    push r1                ; Salva o valor de r1 na pilha.
+    push r3                ; Salva o valor de r3 na pilha.
+    push r4                ; Salva o valor de r4 na pilha.
 
-    loadn r1, #'+'
-    outchar r1, r2
-    loadn r1, #'*'
-    loadn r4, #40
-    sub r3, r2, r4
-    outchar r1, r3
-    loadn r1, #'-'
-    loadn r4, #1
-    add r3, r2, r4
-    outchar r1, r3
-    loadn r1, #','
-    loadn r4, #41
-    sub r3, r2, r4
-    outchar r1, r3
+    loadn r1, #'+'         ; Carrega o caractere '+' (topo do obstáculo).
+    outchar r1, r2         ; Imprime '+' na posição atual (r2).
+    loadn r1, #'*'         ; Carrega o caractere '*' (corpo superior).
+    loadn r4, #40          ; Define o deslocamento vertical para cima.
+    sub r3, r2, r4         ; Calcula a posição acima.
+    outchar r1, r3         ; Imprime '*' na posição calculada.
+    loadn r1, #'-'         ; Carrega o caractere '-' (corpo inferior esquerdo).
+    loadn r4, #1           ; Define o deslocamento horizontal.
+    add r3, r2, r4         ; Calcula a posição à direita.
+    outchar r1, r3         ; Imprime '-' na posição calculada.
+    loadn r1, #','         ; Carrega o caractere ',' (corpo inferior direito).
+    loadn r4, #41          ; Define o deslocamento diagonal.
+    sub r3, r2, r4         ; Calcula a posição à esquerda e acima.
+    outchar r1, r3         ; Imprime ',' na posição calculada.
 
-    pop r4
-    pop r3
-    pop r1
-    rts
+    pop r4                 ; Recupera o valor original de r4.
+    pop r3                 ; Recupera o valor original de r3.
+    pop r1                 ; Recupera o valor original de r1.
+    rts                    ; Retorna da subrotina.
 
 ApagaObstaculo:
-    push r1
-    push r3
-    push r4
+    push r1                ; Salva o valor de r1 na pilha.
+    push r3                ; Salva o valor de r3 na pilha.
+    push r4                ; Salva o valor de r4 na pilha.
 
-    loadn r1, #' '
-    outchar r1, r2
-    loadn r1, #' '
-    loadn r4, #40
-    sub r3, r2, r4
-    outchar r1, r3
-    loadn r1, #' '
-    loadn r4, #1
-    add r3, r2, r4
-    outchar r1, r3
-    loadn r1, #' '
-    loadn r4, #41
-    sub r3, r2, r4
-    outchar r1, r3
+    loadn r1, #' '         ; Carrega o caractere de espaço (para apagar).
+    outchar r1, r2         ; Apaga na posição atual (r2).
+    loadn r4, #40          ; Define o deslocamento vertical para cima.
+    sub r3, r2, r4         ; Calcula a posição acima.
+    outchar r1, r3         ; Apaga na posição calculada.
+    loadn r4, #1           ; Define o deslocamento horizontal.
+    add r3, r2, r4         ; Calcula a posição à direita.
+    outchar r1, r3         ; Apaga na posição calculada.
+    loadn r4, #41          ; Define o deslocamento diagonal.
+    sub r3, r2, r4         ; Calcula a posição à esquerda e acima.
+    outchar r1, r3         ; Apaga na posição calculada.
 
-    pop r4
-    pop r3
-    pop r1
-    rts
+    pop r4                 ; Recupera o valor original de r4.
+    pop r3                 ; Recupera o valor original de r3.
+    pop r1                 ; Recupera o valor original de r1.
+    rts                    ; Retorna da subrotina.
 
 AtPosicaoObstaculo:
-    push r0
-    loadn r0 , #' '
-    outchar r0, r2
-    call ApagaObstaculo
-    dec r2
+    push r0                ; Salva o valor de r0 na pilha.
 
-    loadn r0, #880
-    cmp r2, r0
-    ceq ResetaObstaculo
+    loadn r0, #' '         ; Carrega o caractere de espaço (para apagar).
+    outchar r0, r2         ; Apaga o obstáculo na posição atual.
+    call ApagaObstaculo    ; Chama a subrotina para apagar o obstáculo.
 
-    loadn r0, #840
-    cmp r2, r0
-    ceq ResetaObstaculo
+    dec r2                 ; Decrementa a posição do obstáculo para movê-lo.
 
-    loadn r0, #800
-    cmp r2, r0
-    ceq ResetaObstaculo
+    loadn r0, #880         ; Define limite de posição para reset.
+    cmp r2, r0             ; Verifica se o obstáculo alcançou o limite.
+    ceq ResetaObstaculo    ; Reseta o obstáculo se a condição for verdadeira.
 
-    pop r0
-    rts
+    loadn r0, #840         ; Define outro limite de posição para reset.
+    cmp r2, r0             ; Verifica se o obstáculo alcançou o limite.
+    ceq ResetaObstaculo    ; Reseta o obstáculo se a condição for verdadeira.
+
+    loadn r0, #800         ; Define mais um limite de posição para reset.
+    cmp r2, r0             ; Verifica se o obstáculo alcançou o limite.
+    ceq ResetaObstaculo    ; Reseta o obstáculo se a condição for verdadeira.
+
+    pop r0                 ; Recupera o valor original de r0.
+    rts                    ; Retorna da subrotina.
 
 ResetaObstaculo:
-    loadn r2, #918
-    rts
+    loadn r2, #918         ; Reseta a posição do obstáculo para o início.
+    rts                    ; Retorna da subrotina.
+
 
 ; |------------------------------------------------|
 ; |                     Pontos                     |
@@ -4314,76 +4262,72 @@ ResetaObstaculo:
 
 
 IncPontos:
-    push r1
-    push r2
+    push r1                ; Salva o valor de r1 na pilha.
+    push r2                ; Salva o valor de r2 na pilha.
 
-    load r2, pontos
-    inc r2
-    load r1, delay1
-    dec r1
-    store delay1, r1
-    load r1, delay2
-    dec r1
-    dec r1
-    store delay2, r1
-    store pontos, r2
+    load r2, pontos        ; Carrega o valor atual dos pontos em r2.
+    inc r2                 ; Incrementa os pontos (r2).
 
-    pop r2
-    pop r1
-    rts
+    load r1, delay1        ; Carrega o valor de delay1 em r1.
+    dec r1                 ; Decrementa delay1 (r1).
+    store delay1, r1       ; Armazena o novo valor de delay1 de volta em delay1.
+
+    load r1, delay2        ; Carrega o valor de delay2 em r1.
+    dec r1                 ; Decrementa delay2 (r1).
+    dec r1                 ; Decrementa delay2 (r1) novamente.
+    store delay2, r1       ; Armazena o novo valor de delay2 de volta em delay2.
+
+    store pontos, r2       ; Atualiza o valor de pontos com o novo valor em r2.
+
+    pop r2                 ; Recupera o valor original de r2.
+    pop r1                 ; Recupera o valor original de r1.
+    rts                    ; Retorna da subrotina.
 
 AtPontos:
-    push r1
-    push r5
-    push r6
+    push r1                ; Salva o valor de r1 na pilha.
+    push r5                ; Salva o valor de r5 na pilha.
+    push r6                ; Salva o valor de r6 na pilha.
 
-    loadn r1, #490
-    cmp r2, r1
-        ceq IncPontos
+    loadn r1, #890         ; Carrega o valor 890 em r1 (limite da posição na tela).
+    cmp r2, r1             ; Compara a posição atual (r2) com 890.
+    ceq IncPontos          ; Se a condição for igual, chama a subrotina IncPontos.
 
-    loadn r1, #450
-    cmp r2, r1
-        ceq IncPontos
+    load r5, pontos        ; Carrega o valor de pontos em r5.
+    loadn r6, #0           ; Inicializa r6 como 0, para usar como a posição na tela.
+    call PrintaNumero      ; Chama a subrotina PrintaNumero para imprimir os pontos.
 
-    loadn r1, #410
-    cmp r2, r1
-        ceq IncPontos
-
-    load r5, pontos
-    loadn r6, #11
-    call PrintaNumero
-
-    pop r6
-    pop r5
-    pop r1
-    rts
+    pop r6                 ; Recupera o valor original de r6.
+    pop r5                 ; Recupera o valor original de r5.
+    pop r1                 ; Recupera o valor original de r1.
+    rts                    ; Retorna da subrotina.
 
 PrintaNumero:
-    push r0
-    push r1
-    push r2
-    push r3
+    push r0                ; Salva o valor de r0 na pilha.
+    push r1                ; Salva o valor de r1 na pilha.
+    push r2                ; Salva o valor de r2 na pilha.
+    push r3                ; Salva o valor de r3 na pilha.
 
-    loadn r0, #10
-    loadn r2, #48
+    loadn r0, #10          ; Carrega 10 em r0 (para dividir o número por 10).
+    loadn r2, #48          ; Carrega 48 em r2 (valor ASCII de '0').
 
-    div r1, r5, r0
-    add r3, r1, r2
-    outchar r3, r6
+    div r1, r5, r0         ; Divide o número de pontos (r5) por 10, resultado em r1 (dezena).
+   
+    add r3, r1, r2         ; Soma 48 a r1 para converter o número em seu código ASCII.
+    outchar r3, r6         ; Imprime a dezena na posição de tela indicada por r6.
 
-    inc r6
+    inc r6                 ; Incrementa a posição de tela para o próximo caractere.
 
-    mul r1, r1, r0
-    sub r1, r5, r1
-    add r1, r1, r2
-    outchar r1, r6
+    mul r1, r1, r0         ; Multiplica a dezena por 10.
+    sub r1, r5, r1         ; Subtrai o valor da dezena do número para obter a unidade (resto da divisão).
+   
+    add r1, r1, r2         ; Soma 48 a r1 para converter a unidade em seu código ASCII.
+    outchar r1, r6         ; Imprime a unidade na posição de tela indicada por r6.
 
-    pop r3
-    pop r2
-    pop r1
-    pop r0
-
-    rts
+    pop r3                 ; Recupera o valor original de r3.
+    pop r2                 ; Recupera o valor original de r2.
+    pop r1                 ; Recupera o valor original de r1.
+    pop r0                 ; Recupera o valor original de r0.
+    rts                    ; Retorna da subrotina.
 
 
 ; |------------------------------------------------|
@@ -4391,50 +4335,77 @@ PrintaNumero:
 ; |------------------------------------------------|
 
 DigLetra:
-    push r0
-    push r1
-    loadn r1, #255
+    push r0                ; Salva o valor de r0 na pilha.
+    push r1                ; Salva o valor de r1 na pilha.
+    loadn r1, #255         ; Carrega o valor 255 em r1 (espera-se que o valor 255 seja o código para o caractere de final de entrada, como Enter ou similar).
 
-   DigLetra_Loop:
-        inchar r0
-        cmp r0, r1
-        jeq DigLetra_Loop
+DigLetra_Loop:
+    inchar r0              ; Lê um caractere da entrada e armazena em r0.
+    cmp r0, r1             ; Compara o caractere lido (r0) com 255.
+    jeq DigLetra_Loop      ; Se o caractere for 255 (final de entrada), continua no loop.
 
-    store Letra, r0
+    store Letra, r0        ; Caso contrário, armazena o caractere lido em Letra.
 
-    pop r1
-    pop r0
-    rts
+    pop r1                 ; Recupera o valor original de r1.
+    pop r0                 ; Recupera o valor original de r0.
+    rts                    ; Retorna da subrotina.
 
 ChecaColisao:
-    push r0
-    push r1
+    push r0                ; Salva o valor de r0 na pilha.
+    push r1                ; Salva o valor de r1 na pilha.
 
-    ; Verifica colisão para todas as partes do jogador
-    loadn r0, #40       ; deslocamento vertical
-    sub r1, r6, r0      ; posição acima do jogador
-    cmp r1, r2
-    jeq GameOver
+    ; Verifica colisão para todas as partes do jogador (cima, baixo, esquerda, direita).
+    loadn r0, #40          ; Carrega o valor 40 em r0 (deslocamento vertical).
+    sub r1, r6, r0         ; Calcula a posição acima do jogador (r6 - 40).
+    cmp r1, r2             ; Compara a posição acima do jogador com a posição do obstáculo (r2).
+    jeq GameOver           ; Se for igual, ocorre colisão, então vai para a tela de Game Over.
 
-    add r1, r6, r0      ; posição abaixo do jogador
-    cmp r1, r2
-    jeq GameOver
+    add r1, r6, r0         ; Calcula a posição abaixo do jogador (r6 + 40).
+    cmp r1, r2             ; Compara a posição abaixo do jogador com a posição do obstáculo (r2).
+    jeq GameOver           ; Se for igual, ocorre colisão, então vai para a tela de Game Over.
 
-    loadn r0, #1        ; deslocamento horizontal
-    add r1, r6, r0      ; posição à direita do jogador
-    cmp r1, r2
-    jeq GameOver
+    loadn r0, #1           ; Carrega o valor 1 em r0 (deslocamento horizontal).
+    add r1, r6, r0         ; Calcula a posição à direita do jogador (r6 + 1).
+    cmp r1, r2             ; Compara a posição à direita do jogador com a posição do obstáculo (r2).
+    jeq GameOver           ; Se for igual, ocorre colisão, então vai para a tela de Game Over.
 
-    sub r1, r6, r0      ; posição à esquerda do jogador
-    cmp r1, r2
-    jeq GameOver
+    sub r1, r6, r0         ; Calcula a posição à esquerda do jogador (r6 - 1).
+    cmp r1, r2             ; Compara a posição à esquerda do jogador com a posição do obstáculo (r2).
+    jeq GameOver           ; Se for igual, ocorre colisão, então vai para a tela de Game Over.
 
+    pop r1                 ; Recupera o valor original de r1.
+    pop r0                 ; Recupera o valor original de r0.
+    rts                    ; Retorna da subrotina.
+
+Imprimestr: 
+    ; Subrotina para imprimir uma mensagem na tela. Os parâmetros são:
+    ; r0 = Posição inicial da tela onde o primeiro caractere será impresso.
+    ; r1 = Endereço onde começa a mensagem.
+    ; r2 = Cor da mensagem.
+    push r0                ; Protege r0 na pilha.
+    push r1                ; Protege r1 na pilha.
+    push r2                ; Protege r2 na pilha.
+
+    loadn r3, #'\0'        ; Carrega o valor de '\0' (null terminator) em r3, que será o critério de parada.
+
+ImprimestrLoop:
+    loadi r4, r1           ; Carrega o valor do endereço de r1 (um caractere da mensagem) em r4.
+    cmp r4, r3             ; Compara o caractere lido (r4) com '\0'.
+    jeq ImprimestrSai      ; Se for igual, significa que é o fim da string, então sai do loop.
+
+    add r4, r2, r4         ; Adiciona o valor da cor (r2) ao caractere (r4), ajustando para o formato da cor.
+    outchar r4, r0         ; Imprime o caractere na tela na posição dada por r0.
+    inc r0                 ; Incrementa a posição na tela para o próximo caractere.
+    inc r1                 ; Avança para o próximo caractere na mensagem.
+    jmp ImprimestrLoop     ; Repete o loop para o próximo caractere da mensagem.
+
+ImprimestrSai:  
+    pop r4                 ; Recupera os valores originais de r4, r3 e r2.
+    pop r3
+    pop r2
     pop r1
     pop r0
-    rts
-
-
-;------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    rts                    ; Retorna da subrotina.
 
 
 
