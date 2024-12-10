@@ -1,6 +1,14 @@
 
 jmp main                                                                                                    
 
+;Estefano Rafael Malaquias Alves Nascimento - 7970044
+;Joao Victor do Prado Souza - 15582071
+;Johana Jimena Pizarro Laquise - 10248986
+;Miguel Zalochi Saffioti - 15480474
+;Pyerry Klyzlow Xavier - 15484839
+
+
+
 
 ; ##################################################
 ; #                                                #
