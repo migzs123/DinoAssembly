@@ -37,7 +37,8 @@ Usaremos um simulador para desenvolver programas em linguagem Assembly que poder
 
 
 ## Vídeo de apresentação do jogo
-[LINK] 
+[LINK](https://www.youtube.com/watch?v=99vnJe5I2CA)
+
 
 
 ## Este projeto foi desenvolvido por:
