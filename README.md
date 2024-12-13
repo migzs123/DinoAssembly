@@ -49,5 +49,3 @@ Johana Jimena Pizarro Laquise - 10248986
 Miguel Zalochi Saffioti - 15480474
 Pyerry Klyzlow Xavier - 15484839
 ```
-
-## Referências
